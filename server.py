@@ -104,7 +104,74 @@ class Contacts(Resource):
             response = jsonify(es.index(index=index, refresh=True, doc_type=doc_type, body=index_body))
         return response
 
+class FilterContacts(Resource):
+    def retrieve_documents(self, name):
+        body = {
+            'query': {
+                'match': {
+                    'name': name
+                }
+            }
+        }
+        response = es.search(index=index, doc_type=doc_type, body=body)
+        return response
+
+    def get(self, name):
+        docs = []
+        response = self.retrieve_documents(name)
+        if response['hits']['total'] == 0:
+            return 'Error! No matching documents exist', 400
+        
+        for doc in response['hits']['hits']:
+            docs.append(doc)
+        
+        return jsonify(docs)
+    
+    def put(self, name):
+        docs = []
+        user_ids = []
+        response = self.retrieve_documents(name)
+
+        if response['hits']['total'] == 0:
+            return 'Error! No matching documents exist', 400
+        for doc in response['hits']['hits']:
+            user_ids.append(doc['_id'])
+        
+        phone_number = request.get_json().get('number')
+        if not phone_number:
+            return 'Error! number field is missing', 400
+        
+        body = {
+            'doc': {
+                'name': name,
+                'phone_number': phone_number
+            }
+        }
+        for user_id in user_ids:
+            response = es.update(index=index, refresh=True, doc_type=doc_type, id=user_id, body=body)
+            docs.append(response)
+        
+        return jsonify(docs)
+    
+    def delete(self, name):
+        docs = []
+        user_ids = []
+        response = self.retrieve_documents(name)
+
+        if response['hits']['total'] == 0:
+            return 'Error! No matching documents exist', 400
+
+        for doc in response['hits']['hits']:
+            user_ids.append(doc['_id'])
+            
+        for user_id in user_ids:
+            response = es.delete(index=index, refresh=True, doc_type=doc_type, id=user_id)
+            docs.append(response)
+        
+        return jsonify(docs)
+
 api.add_resource(Contacts, '/contacts')
+api.add_resource(FilterContacts, '/contacts/<name>')
 
 if __name__ == '__main__':
     app.run()
