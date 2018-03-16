@@ -76,6 +76,7 @@ class Contacts(Resource):
         return get_json_output(body, page_size, page_number)
 
     def post(self):
+        
         if not request.get_json().get('name'):
             return 'Error! name is a required field', 400
         name = request.get_json().get('name')
@@ -104,7 +105,7 @@ class Contacts(Resource):
                 'phone_number': phone_number
             }
             response = jsonify(es.index(index=index, refresh=True, doc_type=doc_type, body=index_body))
-        return 'Contact successfully added', 200
+        return response
 
 class FilterContacts(Resource):
     def retrieve_documents(self, name):
