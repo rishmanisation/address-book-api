@@ -1,7 +1,7 @@
 from flask import Flask, request
 from flask_jsonpify import jsonify 
 from flask_restful import Resource, Api
-from json import dumps 
+from re import match
 from elasticsearch import Elasticsearch 
 import requests
 
@@ -86,8 +86,10 @@ class Contacts(Resource):
         
         if len(phone_number) > 15:
             return 'Error! phone_number cannot be longer than 15 digits', 400
+        elif not bool(match('[0-9]+$', phone_number)):
+            return 'Error! phone_number can only contain digits', 400
         else:
-            if not name.isalpha():
+            if not bool(match('[a-zA-Z]+$', name)):
                 return 'Error! name must contain only alphabets', 400
             search_body = {
                 'query': {

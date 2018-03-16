@@ -26,7 +26,8 @@ class TestAddressBook(TestCase):
         response5 = self.create_contact('Henry', '1234567890123456') # Phone number > 15 digits: should fail
         response6 = self.create_contact('Devin') # No phone number provided: should fail
         response7 = self.create_contact('12345') # No name provided: should fail
-        response8 = self.create_contact('Da234bi', '1234') # Name contains numbers: should fail
+        response8 = self.create_contact('Devin', '1234aa') # Phone number contains alphabets: should fail
+        response9 = self.create_contact('Da234bi', '1234') # Name contains numbers: should fail
         self.assertEquals(response1.status_code, 200)
         self.assertEquals(response2.status_code, 200)
         self.assertEquals(response3.status_code, 400)
@@ -35,6 +36,7 @@ class TestAddressBook(TestCase):
         self.assertEquals(response6.status_code, 400)
         self.assertEquals(response7.status_code, 400)
         self.assertEquals(response8.status_code, 400)
+        self.assertEquals(response9.status_code, 400)
 
     def test3_get_all_contacts(self):
         response = self.app.get('/contacts', follow_redirects=True)
