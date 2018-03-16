@@ -75,8 +75,7 @@ class Contacts(Resource):
             }
         return get_json_output(body, page_size, page_number)
 
-    def post(self):
-        
+    def post(self):       
         if not request.get_json().get('name'):
             return 'Error! name is a required field', 400
         name = request.get_json().get('name')
