@@ -5,6 +5,8 @@ click
 docopt
 elasticsearch
 Flask
+Flask-jsonpify
+Flask-restful
 future
 idna
 isort

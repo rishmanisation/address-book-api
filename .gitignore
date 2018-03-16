@@ -1,2 +1,4 @@
 env_app/
 elasticsearch-6.2.2/
+__pycache__/
+.vscode/

@@ -21,6 +21,24 @@ def test_service():
     response = requests.get('http://localhost:9200/')
     return response.content
 
+def get_json_output(body, page_size, page_number):
+    response = es.search(index=index, doc_type=doc_type, body=body)
+    count = int(response['hits']['total'])
+    docs = []
+    for doc in response['hits']['hits']:
+        docs.append(doc)
+
+    if page_number > 1:
+        if count > page_size * (page_number - 1):
+            if count < page_size * page_number:
+                return jsonify(docs[page_size * (page_number - 1):count])
+            return jsonify(docs[page_size * (page_number - 1):page_size * page_number])
+        return 'Error! Page does not exist', 400
+    else:
+        if count > page_size:
+            return jsonify(docs[0:page_size])
+        return jsonify(docs[0:count])
+
 class Contacts(Resource):
     def get(self):
         if 'pageSize' in request.args:
@@ -55,24 +73,8 @@ class Contacts(Resource):
                     }
                 }
             }
-        
-        response = es.search(index=index, doc_type=doc_type, body=body)
-        count = int(response['hits']['total'])
-        docs = []
-        for doc in response['hits']['hits']:
-            docs.append(doc)
+        return get_json_output(body, page_size, page_number)
 
-        if page_number > 1:
-            if count > page_size * (page_number - 1):
-                if count < page_size * page_number:
-                    return jsonify(docs[page_size * (page_number - 1):count])
-                return jsonify(docs[page_size * (page_number - 1):page_size * page_number])
-            return 'Error! Page does not exist', 400
-        else:
-            if count > page_size:
-                return jsonify(docs[0:page_size])
-            return jsonify(docs[0:count])
-    
     def post(self):
         if not request.get_json().get('name'):
             return 'Error! name is a required field', 400
@@ -102,7 +104,7 @@ class Contacts(Resource):
                 'phone_number': phone_number
             }
             response = jsonify(es.index(index=index, refresh=True, doc_type=doc_type, body=index_body))
-        return response
+        return 'Contact successfully added', 200
 
 class FilterContacts(Resource):
     def retrieve_documents(self, name):
@@ -137,7 +139,7 @@ class FilterContacts(Resource):
         for doc in response['hits']['hits']:
             user_ids.append(doc['_id'])
         
-        phone_number = request.get_json().get('number')
+        phone_number = request.get_json().get('phone_number')
         if not phone_number:
             return 'Error! number field is missing', 400
         
@@ -163,7 +165,7 @@ class FilterContacts(Resource):
 
         for doc in response['hits']['hits']:
             user_ids.append(doc['_id'])
-            
+
         for user_id in user_ids:
             response = es.delete(index=index, refresh=True, doc_type=doc_type, id=user_id)
             docs.append(response)

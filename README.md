@@ -14,7 +14,7 @@ This is an API that provides basic address book functionality. It is written in 
 ### To-do list
 * ~~Filtering by name.~~
 * ~~Editing and deleting contacts.~~ 
-* Support for boolean operators (and maybe wildcard characters) in Elasticsearch queries.
+* ~~Support for boolean operators (and maybe wildcard characters) in Elasticsearch queries.~~
 * Unit tests.
 * Separate logic from HTTP stuff.
 * Create data model for contact.
